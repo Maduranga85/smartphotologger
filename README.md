@@ -1,0 +1,2 @@
+# smartphotologger
+Smart project
