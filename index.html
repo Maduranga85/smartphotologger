@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartPhotoLogger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f11;
+      --surface: #16181c;
+      --card: #1e2026;
+      --accent: #f0c040;
+      --text: #f0ede8;
+      --muted: #8a8a8a;
+      --border: rgba(255,255,255,0.07);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(14,15,17,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span {
+      color: var(--text);
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Hero */
+    .hero {
+      padding: 60px 32px 40px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Stats bar */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 24px 32px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      padding: 0 32px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(240,192,64,0.3);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      background: var(--surface);
+    }
+
+    .card-img-placeholder {
+      width: 100%;
+      height: 220px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 40px;
+    }
+
+    .card-body {
+      padding: 16px 18px;
+    }
+
+    .card-location {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-time {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-badge {
+      font-size: 10px;
+      background: rgba(240,192,64,0.15);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px;
+      gap: 16px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Empty */
+    .empty {
+      text-align: center;
+      padding: 80px 32px;
+      color: var(--muted);
+    }
+
+    .empty h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    footer span {
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 14px 16px; }
+      .hero { padding: 40px 16px 24px; }
+      .grid { padding: 0 16px 40px; gap: 16px; }
+      .stats { gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Smart<span>PhotoLogger</span></div>
+    <div class="status-dot">
+      <div class="dot"></div>
+      <span>Live</span>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Captured <em>Moments</em><br>From the Field</h1>
+    <p>Photos logged from the SmartPhotoLogger mobile app, geotagged and timestamped in real time.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value" id="total-count">—</div>
+      <div class="stat-label">Photos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="location-count">—</div>
+      <div class="stat-label">Locations</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="latest-time">—</div>
+      <div class="stat-label">Latest</div>
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading photos...</p>
+    </div>
+  </div>
+
+  <footer>
+    Built with <span>SmartPhotoLogger</span> · Powered by Firebase
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0gv8ZVt2G48DKfjiQpUb8BateNXqK6kw",
+      authDomain: "sea025-7ee85.firebaseapp.com",
+      projectId: "sea025-7ee85",
+      storageBucket: "sea025-7ee85.firebasestorage.app",
+      messagingSenderId: "952166817894",
+      appId: "1:952166817894:web:3ac306e59d1ee300aecda7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function timeAgo(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const diff = Math.floor((new Date() - date) / 60000);
+      if (diff < 60) return `${diff}m ago`;
+      if (diff < 1440) return `${Math.floor(diff/60)}h ago`;
+      return `${Math.floor(diff/1440)}d ago`;
+    }
+
+    async function loadPosts() {
+      try {
+        const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Update stats
+        const locations = new Set(posts.map(p => p.location).filter(Boolean));
+        document.getElementById('total-count').textContent = posts.length;
+        document.getElementById('location-count').textContent = locations.size;
+        document.getElementById('latest-time').textContent = posts.length > 0 ? timeAgo(posts[0].createdAt) : '—';
+
+        const content = document.getElementById('content');
+
+        if (posts.length === 0) {
+          content.innerHTML = `
+            <div class="empty">
+              <h2>No photos yet</h2>
+              <p>Take a photo in the SmartPhotoLogger app to see it here.</p>
+            </div>`;
+          return;
+        }
+
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        posts.forEach((post, i) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.animationDelay = `${i * 0.07}s`;
+
+          const imgHtml = post.imageUrl
+            ? `<img class="card-img" src="${post.imageUrl}" alt="${post.location || 'Photo'}" loading="lazy"/>`
+            : `<div class="card-img-placeholder">📷</div>`;
+
+          card.innerHTML = `
+            ${imgHtml}
+            <div class="card-body">
+              <div class="card-location">${post.location || 'Unknown location'}</div>
+              <div class="card-meta">
+                <span class="card-time">${timeAgo(post.createdAt)}</span>
+                <span class="card-badge">📍 Logged</span>
+              </div>
+            </div>`;
+
+          grid.appendChild(card);
+        });
+
+        content.innerHTML = '';
+        content.appendChild(grid);
+
+      } catch (error) {
+        document.getElementById('content').innerHTML = `
+          <div class="empty">
+            <h2>Failed to load</h2>
+            <p>${error.message}</p>
+          </div>`;
+      }
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
